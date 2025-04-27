@@ -23,7 +23,8 @@ format = ["ruff-format", "black-format"]
 test = "poetry run pytest"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = ">=3.12,<3.13"
+whisperx = {git = "https://github.com/m-bain/whisperX.git", rev = "v3.3.2"}
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.5"
