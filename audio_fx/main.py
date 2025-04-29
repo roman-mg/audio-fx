@@ -1,56 +1,61 @@
 import asyncio
+import gc
 
+import torch
 import whisperx
+
+from config.settings import get_settings
+
+
+def release_resources(model: object) -> None:
+    """
+    Run if low on GPU resources. Force garbage collection and release CUDA cache.
+
+    :param model: NN model
+    """
+
+    gc.collect()
+    torch.cuda.empty_cache()
+    del model
 
 
 async def main() -> None:
-    device = "cuda"
-    audio_file = "audio.mp3"
-    batch_size = 16  # reduce if low on GPU mem
-    compute_type = "float16"  # change to "int8" if low on GPU mem (may reduce accuracy)
-    architecture = "tiny"
-    hf_token = ""
+    config = get_settings()
 
-    # 1. Transcribe with original whisper (batched)
-    model = whisperx.load_model(architecture, device, compute_type=compute_type)
+    model_asr = whisperx.load_model(
+        config.whisper.architecture,
+        config.device,
+        compute_type=config.whisper.compute_type,
+    )
 
-    # save model to local path (optional)
-    # model_dir = "/path/"
-    # model = whisperx.load_model(architecture, device, compute_type=compute_type, download_root=model_dir)
+    audio = whisperx.load_audio(config.audio_file)
+    result = model_asr.transcribe(audio, batch_size=config.whisper.batch_size)
 
-    audio = whisperx.load_audio(audio_file)
-    result = model.transcribe(audio, batch_size=batch_size)
-    print(result["segments"])  # before alignment
+    release_resources(model_asr)
 
-    # delete model if low on GPU resources
-    # import gc; gc.collect(); torch.cuda.empty_cache(); del model
-
-    # 2. Align whisper output
-    model_a, metadata = whisperx.load_align_model(language_code=result["language"], device=device)
+    model_alignment, metadata = whisperx.load_align_model(language_code=result["language"], device=config.device)
     result = whisperx.align(
         result["segments"],
-        model_a,
+        model_alignment,
         metadata,
         audio,
-        device,
+        config.device,
         return_char_alignments=False,
     )
 
-    print(result["segments"])  # after alignment
+    release_resources(model_alignment)
 
-    # delete model if low on GPU resources
-    # import gc; gc.collect(); torch.cuda.empty_cache(); del model_a
+    diarize_model = whisperx.DiarizationPipeline(use_auth_token=config.hf_token, device=config.device)
 
-    # 3. Assign speaker labels
-    diarize_model = whisperx.DiarizationPipeline(use_auth_token=hf_token, device=device)
-
-    # add min/max number of speakers if known
     diarize_segments = diarize_model(audio)
-    # diarize_model(audio, min_speakers=min_speakers, max_speakers=max_speakers)
+    diarize_model(
+        audio,
+        min_speakers=config.speaker_diarization.min_speakers,
+        max_speakers=config.speaker_diarization.max_speakers,
+    )
 
     result = whisperx.assign_word_speakers(diarize_segments, result)
-    print(diarize_segments)
-    print(result["segments"])  # segments are now assigned speaker IDs
+    print(result["segments"])
 
 
 if __name__ == "__main__":
