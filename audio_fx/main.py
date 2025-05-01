@@ -3,7 +3,6 @@ import gc
 
 import torch
 import whisperx
-
 from config.settings import get_settings
 
 

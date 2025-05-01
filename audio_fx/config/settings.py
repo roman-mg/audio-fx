@@ -28,6 +28,6 @@ class Settings(BaseSettings):
     speaker_diarization: SpeakerDiarization = SpeakerDiarization()
 
 
-@lru_cache()
+@lru_cache
 def get_settings() -> Settings:
     return Settings()
