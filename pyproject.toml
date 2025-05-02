@@ -28,8 +28,8 @@ test = "poetry run pytest -c pyproject.toml --cov-report=html tests/"
 python = ">=3.12,<3.13"
 pydantic-settings = "^2.9.1"
 torch = [
-    { url = "https://download.pytorch.org/whl/cpu/torch-2.7.0-cp312-none-macosx_11_0_arm64.whl", platform = "linux" },
-    { url = "https://download.pytorch.org/whl/cpu/torch-2.7.0%2Bcpu-cp312-cp312-manylinux_2_28_x86_64.whl", platform = "darwin" },
+    { url = "https://download.pytorch.org/whl/cpu/torch-2.7.0-cp312-none-macosx_11_0_arm64.whl", platform = "darwin" },
+    { url = "https://download.pytorch.org/whl/cpu/torch-2.7.0%2Bcpu-cp312-cp312-manylinux_2_28_x86_64.whl", platform = "linux" },
     { url = "https://download.pytorch.org/whl/cu118/torch-2.7.0%2Bcu118-cp312-cp312-win_amd64.whl", platform = "win32" }
 ]
 whisperx = { git = "https://github.com/m-bain/whisperX.git", rev = "v3.3.2" }
