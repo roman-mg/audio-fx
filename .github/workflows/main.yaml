@@ -31,12 +31,6 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-poetry-
 
-    #FIXME: split .lock file for `win32` and `linux` platforms
-    - name: Force regenerate poetry.lock
-      run: |
-        rm -f poetry.lock
-        poetry lock
-
     - name: Install dependencies
       run: poetry install --no-interaction --with dev
 
