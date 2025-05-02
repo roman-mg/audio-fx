@@ -32,6 +32,9 @@ jobs:
           ${{ runner.os }}-poetry-
 
     - name: Install dependencies
+      run: poetry lock
+
+    - name: Install dependencies
       run: poetry install --no-interaction --with dev
 
     - name: Codestyle checks
